@@ -16,6 +16,7 @@
 
 #include <iostream>
 #include <vector>
+#include <queue>
 
 using namespace std;
 
@@ -90,6 +91,62 @@ public:
 		}
 		return output;
     }
+
+	int maxDepth(TreeNode* root) {
+        if (root){
+			return (max(this->maxDepth(root->left), this->maxDepth(root->right)) + 1);
+        }
+		else {
+			return 0;
+		}
+    }
+
+	bool isSymmetric(TreeNode* root) {
+        if (!root){
+			return true;
+        }
+		TreeNode *left = NULL;
+		TreeNode *right = NULL;
+		queue<TreeNode *> queue_left, queue_right;
+		queue_left.push(root->left);
+		queue_right.push(root->right);
+		while (!queue_left.empty() && !queue_right.empty()){
+			left = queue_left.front();
+			right = queue_right.front();
+			queue_left.pop();
+			queue_right.pop();
+			if (!left && !right){
+				continue;
+			}
+			if (left && right){
+				if (left->val != right->val){
+					return false;
+				}
+				queue_left.push(left->left);
+				queue_right.push(right->right);
+				queue_left.push(left->right);
+				queue_right.push(right->left);
+				continue;
+			}
+			return false;
+		}
+		return true;
+    }
+
+	bool hasPathSum(TreeNode* root, int sum) {
+		if (root){
+			sum -= root->val;
+			if (sum == 0){
+				if (!root->left && !root->right){
+					return true;
+				}
+			}
+			return (this->hasPathSum(root->left, sum) || this->hasPathSum(root->right, sum));
+		}
+		else {
+			return false;
+		}
+    }
 };
 
 int main(int argc, char *argv[]){
@@ -136,6 +193,73 @@ int main(int argc, char *argv[]){
 			cout<<*it_sub<<" ";
 		}
 		cout<<endl;
+	}
+
+	cout<<"Test max depth:"<<endl;
+	cout<<solution.maxDepth(&node3)<<endl;
+
+	cout<<"Test symmetric:"<<endl;
+	TreeNode symmetric_tree[7](0);
+	symmetric_tree[0] = 1;
+	symmetric_tree[1] = 2;
+	symmetric_tree[2] = 2;
+	symmetric_tree[3] = 3;
+	symmetric_tree[4] = 4;
+	symmetric_tree[5] = 4;
+	symmetric_tree[6] = 3;
+	symmetric_tree[0].left = &symmetric_tree[1];
+	symmetric_tree[0].right = &symmetric_tree[2];
+	symmetric_tree[1].left = &symmetric_tree[3];
+	symmetric_tree[1].right = &symmetric_tree[4];
+	symmetric_tree[2].left = &symmetric_tree[5];
+	symmetric_tree[2].right = &symmetric_tree[6];
+	if (solution.isSymmetric(symmetric_tree)){
+		cout<<"yes"<<endl;
+	}
+	else {
+		cout<<"no"<<endl;
+	}
+	TreeNode unsymmetric_tree[5](0);
+	unsymmetric_tree[0] = 1;
+	unsymmetric_tree[1] = 2;
+	unsymmetric_tree[2] = 2;
+	unsymmetric_tree[3] = 3;
+	unsymmetric_tree[4] = 3;
+	unsymmetric_tree[0].left = &unsymmetric_tree[1];
+	unsymmetric_tree[0].right = &unsymmetric_tree[2];
+	unsymmetric_tree[1].right = &unsymmetric_tree[3];
+	unsymmetric_tree[2].right = &unsymmetric_tree[4];
+	if (solution.isSymmetric(unsymmetric_tree)){
+		cout<<"yes"<<endl;
+	}
+	else {
+		cout<<"no"<<endl;
+	}
+
+	cout<<"Test has path sum:"<<endl;
+	TreeNode sum_tree[9](0);
+	sum_tree[0] = 5;
+	sum_tree[1] = 4;
+	sum_tree[2] = 8;
+	sum_tree[3] = 11;
+	sum_tree[4] = 13;
+	sum_tree[5] = 4;
+	sum_tree[6] = 7;
+	sum_tree[7] = 2;
+	sum_tree[8] = 1;
+	sum_tree[0].left = &sum_tree[1];
+	sum_tree[0].right = &sum_tree[2];
+	sum_tree[1].left = &sum_tree[3];
+	sum_tree[2].left = &sum_tree[4];
+	sum_tree[2].right = &sum_tree[5];
+	sum_tree[3].left = &sum_tree[6];
+	sum_tree[3].right = &sum_tree[7];
+	sum_tree[5].right = &sum_tree[8];
+	if (solution.hasPathSum(sum_tree, 22)){
+		cout<<"yes"<<endl;
+	}
+	else {
+		cout<<"no"<<endl;
 	}
 	
 	return 0;
