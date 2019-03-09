@@ -27,6 +27,23 @@ struct TreeNode {
 	TreeNode(int x): val(x), left(NULL), right(NULL){}
 };
 
+class Node {
+public:
+    int val;
+    Node* left;
+    Node* right;
+    Node* next;
+
+    Node() {}
+
+    Node(int _val, Node* _left, Node* _right, Node* _next) {
+        val = _val;
+        left = _left;
+        right = _right;
+        next = _next;
+    }
+};
+
 class Solution {
 public:
 	vector<int> preorderTraversal(TreeNode *root){
@@ -146,6 +163,120 @@ public:
 		else {
 			return false;
 		}
+    }
+
+	TreeNode* buildTree(vector<int>& inorder, vector<int>& postorder) {
+        return this->buildTreeWithInAndPostOrder(inorder.begin(), inorder.end(), postorder.begin(), postorder.end());
+    }
+
+	TreeNode *buildTreeWithInAndPostOrder(		vector<int>::iterator inorder_begin, vector<int>::iterator inorder_end,
+		vector<int>::iterator postorder_begin, vector<int>::iterator postorder_end){
+		TreeNode *node = NULL;
+
+		if (postorder_begin != postorder_end){
+			node = new TreeNode(*(postorder_end-1));
+			vector<int>::iterator it_inorder = inorder_begin, it_postorder = postorder_begin;
+			for (; it_inorder != inorder_end; it_inorder++, it_postorder++){
+				if (*it_inorder == *(postorder_end-1)){
+					break;
+				}
+			}
+			node->left = buildTreeWithInAndPostOrder(inorder_begin, it_inorder, postorder_begin, it_postorder);
+			node->right = buildTreeWithInAndPostOrder(it_inorder+1, inorder_end, it_postorder, postorder_end-1);
+		}
+		
+		return node;
+	}
+
+	TreeNode* buildTree_1(vector<int>& preorder, vector<int>& inorder) {
+        return this->buildTreeWithPreAndInOrder(preorder.begin(), preorder.end(), inorder.begin(), inorder.end());
+    }
+
+	TreeNode *buildTreeWithPreAndInOrder(vector<int>::iterator preorder_begin, vector<int>::iterator preorder_end,
+		vector<int>::iterator inorder_begin, vector<int>::iterator inorder_end){
+		TreeNode *node = NULL;
+
+		if (preorder_begin != preorder_end){
+			node = new TreeNode(*preorder_begin);
+			vector<int>::iterator it_inorder = inorder_begin, it_preorder = preorder_begin+1;
+			for (; it_inorder != inorder_end; it_inorder++, it_preorder++){
+				if (*it_inorder == *preorder_begin){
+					break;
+				}
+			}
+			node->left = buildTreeWithPreAndInOrder(preorder_begin+1, it_preorder, inorder_begin, it_inorder);
+			node->right = buildTreeWithPreAndInOrder(it_preorder, preorder_end, it_inorder+1, inorder_end);
+		}
+		
+		return node;
+	}
+
+	Node* connect(Node* root) {
+        if (root){
+			if (root->left){
+				root->left->next = root->right;
+				if (root->next){
+					root->right->next = root->next->left;
+				}
+				this->connect(root->left);
+				this->connect(root->right);
+			}
+        }
+		return root;
+    }
+
+	Node* connect1(Node* root) {
+        if (root){
+			if (root->left && root->right){
+				root->left->next = root->right;
+				Node *next = root->next;
+				while (next){
+					if (next->left){
+						root->right->next = next->left;
+						break;
+					}
+					else if (next->right){
+						root->right->next = next->right;
+						break;
+					}
+					next = next->next;
+				}
+				// We must recurse on right child first.
+				this->connect(root->right);
+				this->connect(root->left);
+			}
+			else if (root->left){
+				Node *next = root->next;
+				while (next){
+					if (next->left){
+						root->left->next = next->left;
+						break;
+					}
+					else if (next->right){
+						root->left->next = next->right;
+						break;
+					}
+					next = next->next;
+				}
+				this->connect(root->left);
+			}
+			else if (root->right){
+				Node *next = root->next;
+				while (next){
+					if (next->left){
+						root->right->next = next->left;
+						break;
+					}
+					else if (next->right){
+						root->right->next = next->right;
+						break;
+					}
+					next = next->next;
+				}
+				this->connect(root->right);
+			}
+        }
+		return root;
     }
 };
 
