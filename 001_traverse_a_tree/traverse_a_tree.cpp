@@ -15,8 +15,11 @@
 **/
 
 #include <iostream>
+#include <sstream>
 #include <vector>
 #include <queue>
+#include <deque>
+#include <string>
 
 using namespace std;
 
@@ -278,6 +281,101 @@ public:
         }
 		return root;
     }
+
+	TreeNode* lowestCommonAncestor(TreeNode* root, TreeNode* p, TreeNode* q) {
+        TreeNode *node = root;
+		if (!root){
+			return NULL;
+		}
+		if (root->val == p->val){
+			return root;
+		}
+		if (root->val == q->val){
+			return root;
+		}
+		TreeNode *left = this->lowestCommonAncestor(root->left, p, q);
+		TreeNode *right = this->lowestCommonAncestor(root->right, p, q);
+		if (left && right){
+			return root;
+		}
+		else if (left){
+			return left;
+		}
+		else if (right){
+			return right;
+		}
+		else {
+			return NULL;
+		}
+    }
+
+	// Encodes a tree to a single string.
+    string serialize(TreeNode* root) {
+        stringstream output, ss;
+		output<<"[";
+		deque<TreeNode *> nodes;
+		if (root){
+			output<<root->val;
+			nodes.push_back(root->left);
+			nodes.push_back(root->right);
+			while (!nodes.empty()){
+				TreeNode *node = nodes.front();
+				nodes.pop_front();
+				if (node){
+					output<<ss.str();
+					ss.str("");
+					output<<","<<node->val;
+					nodes.push_back(node->left);
+					nodes.push_back(node->right);
+				}
+				else {
+					ss<<",null";
+				}
+			}
+		}
+		output<<"]";
+		return output.str();
+    }
+
+    // Decodes your encoded data to tree.
+    TreeNode* deserialize(string data) {
+		data.back() = ',';
+    	if (data.length() == 2){
+			return NULL;
+    	}
+		data = data.substr(1);
+		size_t pos = data.find(",");
+		TreeNode *root = new TreeNode(stoi(data.substr(0, pos)));
+		deque<TreeNode *> nodes;
+		TreeNode *node = root;
+		int flag = 0;
+		while (true){
+			data = data.substr(pos+1);
+			pos = data.find(",");
+			if (pos == string::npos){
+				break;
+			}
+			if (!node){
+				node = nodes.front();
+				nodes.pop_front();
+			}
+			TreeNode *new_node = NULL;
+			if (data.substr(0, pos).compare("null")){
+				new_node = new TreeNode(stoi(data.substr(0, pos)));
+				nodes.push_back(new_node);
+			}
+			if (flag == 0){
+				node->left = new_node;
+				flag = 1;
+			}
+			else {
+				node->right = new_node;
+				flag = 0;
+				node = NULL;
+			}
+		}
+        return root;
+    }
 };
 
 int main(int argc, char *argv[]){
@@ -392,6 +490,22 @@ int main(int argc, char *argv[]){
 	else {
 		cout<<"no"<<endl;
 	}
+
+	cout<<"Test serialize:"<<endl;
+	TreeNode tree[5](0);
+	tree[0].val = 1;
+	tree[1].val = 2;
+	tree[2].val = 3;
+	tree[3].val = 4;
+	tree[4].val = 5;
+	tree[0].left = &tree[1];
+	tree[0].right = &tree[2];
+	tree[2].left = &tree[3];
+	tree[2].right = &tree[4];
+	cout<<solution.serialize(tree)<<endl;
+	cout<<solution.serialize(NULL)<<endl;
+	cout<<solution.serialize(solution.deserialize("[1,2,3,null,null,4,5]"))<<endl;
+	cout<<solution.serialize(solution.deserialize("[]"))<<endl;
 	
 	return 0;
 }
